@@ -3,7 +3,6 @@ import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native
 import {Calendar, CalendarUtils} from 'react-native-calendars';
 import testIDs from '../testIDs';
 import {GymCalendarDto} from '../data/GymCalendarDto'
-import * as mock_data from '../mock_data.json'
 import {ListItem} from "@react-native-material/core";
 
 const mockData:GymCalendarDto[] = [
@@ -48,8 +47,6 @@ const INITIAL_DATE: string = CURRENT_DATE.toISOString().split('T')[0];
 const DisplayMonth = (date:Date) => {
     return date.toDateString().split(' ')[1] + "-" + date.toDateString().split(' ')[3]
 }
-
-
 
 const CalendarScreen = () => {
     const [selected, setSelected] = useState<string>(INITIAL_DATE);
