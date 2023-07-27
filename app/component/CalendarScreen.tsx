@@ -1,9 +1,10 @@
-import React, {Fragment, useCallback, useMemo, useRef, useState} from 'react';
+import React, {Fragment, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Calendar, CalendarUtils} from 'react-native-calendars';
 import testIDs from '../testIDs';
 import {GymCalendarDto} from '../data/GymCalendarDto'
 import {ListItem} from "@react-native-material/core";
+import {getCalendarApi} from "../api/CalendarApi";
 
 const mockData:GymCalendarDto[] = [
     {
@@ -51,37 +52,68 @@ const DisplayMonth = (date:Date) => {
 const CalendarScreen = () => {
     const [selected, setSelected] = useState<string>(INITIAL_DATE);
     const [currentMonth, setCurrentMonth] = useState<string>(DisplayMonth(CURRENT_DATE));
+    const [calendarData, setCalendarData] = useState<GymCalendarDto[]>([])
 
-    const getDate = (count: number) => {
-        const date:Date = new Date(CURRENT_DATE)
-        const newDate:number = date.setDate(date.getDate() + count);
-        return CalendarUtils.getCalendarDateString(newDate);
-    };
+    const fetchCalendar = async () => {
+        setCalendarData(await getCalendarApi(selected.toString().split('-')[0],selected.toString().split('-')[1]))
+    }
 
     const onDayPress = useCallback((day) => {
         setSelected(day.dateString);
     }, []);
-    useMemo(() => {
-        return {
-            [getDate(-1)]: {
-                dotColor: 'red',
-                marked: true
-            },
+
+    const marked = useMemo(() => {
+        let markedDay = {
             [selected]: {
                 selected: true,
                 disableTouchEvent: true,
                 selectedColor: 'orange',
                 selectedTextColor: 'red'
+            }}
+        let markedDots = {}
+        mockData.map((value,index) => {
+            markedDots[CalendarUtils.getCalendarDateString(value.event_start_time)] = {
+                dots: [
+                    {key: value.event_name, color: 'blue', selectedDotColor: 'red'}
+                ]
             }
-        };
+        })
+        return {
+            ...markedDots,
+            ...markedDay
+        }
     }, [selected]);
+
+    const customHeaderProps: any = useRef();
+
+    const setCustomHeaderNewMonth = (next:boolean = false) => {
+        const add:number = next ? 1 : -1;
+        const month:Date = new Date(customHeaderProps?.current?.month);
+        const newMonth:Date = new Date(month.setMonth(month.getMonth() + add));
+        customHeaderProps?.current?.addMonth(add);
+        setCurrentMonth(DisplayMonth(newMonth));
+    };
+    const moveNext = () => {
+        setCustomHeaderNewMonth(true);
+    };
+    const movePrevious = () => {
+        setCustomHeaderNewMonth(false);
+    };
+    const handleCalendarItemPress = ()=>{
+
+    }
     const renderCalendarWithSelectableDate = () => {
         const CustomHeader = React.forwardRef((props, ref) => {
             customHeaderProps.current = props;
 
             return (
                 // @ts-expect-error
-                <View ref={ref} {...props} style={styles.customHeader}>
+                <View ref={ref} {...props}
+                      style={{backgroundColor: '#eebb8f',
+                          flexDirection: 'row',
+                          justifyContent: 'space-around',
+                          marginHorizontal: -4,
+                          padding: 8}}>
                     <TouchableOpacity onPress={movePrevious}>
                         <Text>Previous</Text>
                     </TouchableOpacity>
@@ -100,69 +132,29 @@ const CalendarScreen = () => {
                     testID={testIDs.calendars.FIRST}
                     enableSwipeMonths
                     current={INITIAL_DATE}
-                    style={styles.calendar}
+                    style={{marginBottom: 10}}
                     onDayPress={onDayPress}
                     markingType={'multi-dot'}
-                    markedDates={handleDots()}
+                    markedDates={marked}
                 />
             </Fragment>
         );
     };
-    const customHeaderProps: any = useRef();
-
-    const setCustomHeaderNewMonth = (next:boolean = false) => {
-        const add:number = next ? 1 : -1;
-        const month:Date = new Date(customHeaderProps?.current?.month);
-        const newMonth:Date = new Date(month.setMonth(month.getMonth() + add));
-        customHeaderProps?.current?.addMonth(add);
-        setCurrentMonth(DisplayMonth(newMonth));
-    };
-    const moveNext = () => {
-        setCustomHeaderNewMonth(true);
-    };
-    const movePrevious = () => {
-        setCustomHeaderNewMonth(false);
-    };
-
-    const handleCalendarItemPress = ()=>{
-
-    }
-
-    function handleDots() {
-        console.log(mockData.map((value) => {
-            const date:Date = new Date(CURRENT_DATE)
-            return (CalendarUtils.getCalendarDateString(date.setDate(value.event_start_time.getDate())))
-        }))
-        return {
-            [getDate(2)]: {
-                dots: [
-                    {key: 'vacation', color: 'blue', selectedDotColor: 'red'},
-                    {key: 'massage', color: 'red', selectedDotColor: 'white'}
-                ]
-            },
-            [getDate(3)]: {
-                dots: [
-                    {key: 'vacation', color: 'green', selectedDotColor: 'red'},
-                    {key: 'massage', color: 'red', selectedDotColor: 'green'}
-                ]
-            }
-        }
-    }
-
     const calendarItem = () => {
-        return mockData.map((value) => {
+        return mockData.filter(value =>
+            CalendarUtils.getCalendarDateString(value.event_start_time) === CalendarUtils.getCalendarDateString(selected)
+        ).map((value) => {
             return (<>
                     <ListItem
                         key={value.calendar_id}
                         title={value.location_name}
-                        secondaryText={value.sub_location_name}
+                        secondaryText={value.sub_location_name + ": " + value.event_name}
                         onPress={handleCalendarItemPress}
                     />
             </>
             )
         })
     };
-
 
     return (
         <ScrollView showsVerticalScrollIndicator={false} testID={testIDs.calendars.CONTAINER}>
@@ -175,55 +167,3 @@ const CalendarScreen = () => {
 };
 
 export default CalendarScreen;
-
-const styles = StyleSheet.create({
-    calendar: {
-        marginBottom: 10
-    },
-    switchContainer: {
-        flexDirection: 'row',
-        margin: 10,
-        alignItems: 'center'
-    },
-    switchText: {
-        margin: 10,
-        fontSize: 16
-    },
-    text: {
-        textAlign: 'center',
-        padding: 10,
-        backgroundColor: 'lightgrey',
-        fontSize: 16
-    },
-    disabledText: {
-        color: 'grey'
-    },
-    defaultText: {
-        color: 'purple'
-    },
-    customCalendar: {
-        height: 250,
-        borderBottomWidth: 1,
-        borderBottomColor: 'lightgrey'
-    },
-    customDay: {
-        textAlign: 'center'
-    },
-    customHeader: {
-        backgroundColor: '#eebb8f',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginHorizontal: -4,
-        padding: 8
-    },
-    customTitleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10
-    },
-    customTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#00BBF2'
-    }
-});
