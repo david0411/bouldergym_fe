@@ -1,13 +1,13 @@
 import {SafeAreaView} from "react-native"
 import {Stack} from "expo-router";
-import CalendarScreen from "./component/CalendarScreen"
+import CalendarItemDetails from "../component/CalendarItemDetails";
 
-const Home = () => {
+const Details = () => {
     return (
         <SafeAreaView>
             <Stack.Screen/>
-            <CalendarScreen/>
+            <CalendarItemDetails/>
         </SafeAreaView>
     )
 }
-export default Home
+export default Details

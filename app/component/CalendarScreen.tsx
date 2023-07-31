@@ -6,6 +6,7 @@ import testIDs from '../testIDs';
 import {GymCalendarDto} from '../data/GymCalendarDto'
 import {getCalendarApi} from "../api/CalendarApi";
 import Loading from "./Loading";
+import {useRouter} from "expo-router";
 
 const CURRENT_DATE: Date = new Date(Date.now());
 
@@ -19,7 +20,7 @@ const CalendarScreen = () => {
     const [selected, setSelected] = useState<string>(INITIAL_DATE);
     const [currentMonth, setCurrentMonth] = useState<Date>(CURRENT_DATE);
     const [calendarData, setCalendarData] = useState<GymCalendarDto[]>([])
-
+    const router = useRouter()
     const fetchCalendar = async () => {
         console.log("Getting Calendar " + currentMonth.getFullYear() + " " + (currentMonth.getMonth() + 1).toString())
         setCalendarData(await getCalendarApi(currentMonth.getFullYear().toString(), (currentMonth.getMonth() + 1).toString()))
@@ -39,7 +40,7 @@ const CalendarScreen = () => {
             }
         }
         let markedDots = {}
-        calendarData.map((value, index) => {
+        calendarData.map((value) => {
             markedDots[CalendarUtils.getCalendarDateString(value.event_start_time)] = {
                 dots: [
                     {key: value.event_name, color: 'blue', selectedDotColor: 'red'}
@@ -68,7 +69,7 @@ const CalendarScreen = () => {
         setCustomHeaderNewMonth(false);
     };
     const handleCalendarItemPress = () => {
-
+        router.push({pathname:"/details",params:{id:"1"}})
     }
     const renderCalendarWithSelectableDate = () => {
         const CustomHeader = React.forwardRef((props, ref) => {
@@ -120,7 +121,9 @@ const CalendarScreen = () => {
                             key={value.calendar_id}
                             title={value.location_name}
                             secondaryText={value.sub_location_name + ": " + value.event_name}
-                            onPress={handleCalendarItemPress}
+                            onPress={ () => {
+                                router.push({pathname:"/details/[id]",params:{id: value.calendar_id}})
+                            }}
                         />
                     </>
                 )
