@@ -1,12 +1,13 @@
+import {useRouter} from "expo-router";
 import React, {Fragment, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {Calendar, CalendarUtils} from 'react-native-calendars';
 import {ListItem} from "@react-native-material/core";
+import Loading from "./Loading";
 import testIDs from '../testIDs';
 import {GymCalendarDto} from '../data/GymCalendarDto'
 import {getCalendarApi} from "../api/CalendarApi";
-import Loading from "./Loading";
-import {useRouter} from "expo-router";
+import {DateData} from "react-native-calendars/src/types";
 
 const CURRENT_DATE: Date = new Date(Date.now());
 
@@ -26,7 +27,7 @@ const CalendarScreen = () => {
         setCalendarData(await getCalendarApi(currentMonth.getFullYear().toString(), (currentMonth.getMonth() + 1).toString()))
     }
 
-    const onDayPress = useCallback((day) => {
+    const onDayPress = useCallback((day:DateData) => {
         setSelected(day.dateString);
     }, []);
 
@@ -68,9 +69,7 @@ const CalendarScreen = () => {
     const movePrevious = () => {
         setCustomHeaderNewMonth(false);
     };
-    const handleCalendarItemPress = () => {
-        router.push({pathname:"/details",params:{id:"1"}})
-    }
+
     const renderCalendarWithSelectableDate = () => {
         const CustomHeader = React.forwardRef((props, ref) => {
             customHeaderProps.current = props;
