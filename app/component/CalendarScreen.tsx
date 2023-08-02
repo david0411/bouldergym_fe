@@ -116,7 +116,7 @@ const CalendarScreen = () => {
             return calendarData.filter(value =>
                 CalendarUtils.getCalendarDateString(value.event_start_time) === CalendarUtils.getCalendarDateString(selected)
             ).map((value) => {
-                return (<>
+                return (
                         <ListItem
                             key={value.calendar_id}
                             title={value.location_name}
@@ -125,7 +125,6 @@ const CalendarScreen = () => {
                                 router.push({pathname:"/details/[id]",params:{id: value.calendar_id}})
                             }}
                         />
-                    </>
                 )
             })
         }
