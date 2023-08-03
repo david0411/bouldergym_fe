@@ -10,9 +10,11 @@ const Home = () => {
         <SafeAreaView>
             <Stack.Screen
             options={{
-                headerTitle: '',
+                headerTitle: 'Gym Calendar',
                 headerRight: () => (
-                    <Button title="Add" onPress={() => {
+                    <Button title="Add"
+                            color="blue"
+                            onPress={() => {
                         router.push({pathname:"/addCalendarItem"})
                     }}/>
                     )

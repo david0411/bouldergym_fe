@@ -10,36 +10,25 @@ import {getCalendarApi} from "../api/CalendarApi";
 import {DateData} from "react-native-calendars/src/types";
 
 const CURRENT_DATE: Date = new Date(Date.now());
-
 const INITIAL_DATE: string = CURRENT_DATE.toISOString().split('T')[0];
-
 const DisplayMonth = (date: Date) => {
     return date.toDateString().split(' ')[1] + "-" + date.toDateString().split(' ')[3]
 }
 
 const CalendarScreen = () => {
-    const [selected, setSelected] = useState<string>(INITIAL_DATE);
-    const [currentMonth, setCurrentMonth] = useState<Date>(CURRENT_DATE);
+    const [selected, setSelected] = useState<string>(INITIAL_DATE)
+    const [currentMonth, setCurrentMonth] = useState<Date>(CURRENT_DATE)
     const [calendarData, setCalendarData] = useState<GymCalendarDto[]>([])
+    const [dots, setDots] = useState({})
     const router = useRouter()
+
     const fetchCalendar = async () => {
         console.log("Getting Calendar " + currentMonth.getFullYear() + " " + (currentMonth.getMonth() + 1).toString())
         setCalendarData(await getCalendarApi(currentMonth.getFullYear().toString(), (currentMonth.getMonth() + 1).toString()))
     }
 
-    const onDayPress = useCallback((day:DateData) => {
-        setSelected(day.dateString);
-    }, []);
-
-    const marked = useMemo(() => {
-        let markedDay = {
-            [selected]: {
-                selected: true,
-                disableTouchEvent: true,
-                selectedColor: 'orange',
-                selectedTextColor: 'red'
-            }
-        }
+    const fetchDots = () => {
+        console.log("Create dots")
         let markedDots = {}
         calendarData.map((value) => {
             markedDots[CalendarUtils.getCalendarDateString(value.event_start_time)] = {
@@ -48,11 +37,34 @@ const CalendarScreen = () => {
                 ]
             }
         })
+        setDots(markedDots)
+    }
+
+    const onDayPress = useCallback((day: DateData) => {
+        setSelected(day.dateString);
+    }, []);
+
+    const marked = useMemo(() => {
+        console.log("Load marked")
+        console.log(dots)
+        let markedDay = {
+            [selected]: {
+                selected: true,
+                disableTouchEvent: true,
+                selectedColor: 'orange',
+                selectedTextColor: 'red'
+            }
+        }
         return {
-            ...markedDots,
+            ...dots,
             ...markedDay
         }
-    }, [selected]);
+    }, [selected,currentMonth]);
+
+    useEffect(() => {
+        void fetchCalendar()
+        fetchDots()
+    }, [currentMonth])
 
     const customHeaderProps: any = useRef();
 
@@ -70,10 +82,9 @@ const CalendarScreen = () => {
         setCustomHeaderNewMonth(false);
     };
 
-    const renderCalendarWithSelectableDate = () => {
+    const renderCalendar = () => {
         const CustomHeader = React.forwardRef((props, ref) => {
             customHeaderProps.current = props;
-
             return (
                 // @ts-expect-error
                 <View ref={ref} {...props}
@@ -110,33 +121,33 @@ const CalendarScreen = () => {
             </Fragment>
         );
     };
+
     const calendarItem = () => {
         if (calendarData) {
             return calendarData.filter(value =>
                 CalendarUtils.getCalendarDateString(value.event_start_time) === CalendarUtils.getCalendarDateString(selected)
             ).map((value) => {
                 return (
-                        <ListItem
-                            key={value.calendar_id}
-                            title={value.location_name}
-                            secondaryText={value.sub_location_name + ": " + value.event_name}
-                            onPress={ () => {
-                                router.push({pathname:"/details/[id]",params:{id: value.calendar_id}})
-                            }}
-                        />
+                    <ListItem
+                        key={value.calendar_id}
+                        title={value.location_name}
+                        secondaryText={value.sub_location_name + ": " + value.event_name}
+                        onPress={() => {
+                            router.push({pathname: "/details/[id]", params: {id: value.calendar_id}})
+                        }}
+                    />
                 )
             })
         }
         return <Loading/>
     };
 
-    useEffect(() => {
-        void fetchCalendar()
-    }, [currentMonth])
+
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false} testID={testIDs.calendars.CONTAINER}>
-            {renderCalendarWithSelectableDate()}
+        <ScrollView showsVerticalScrollIndicator={false}
+                    testID={testIDs.calendars.CONTAINER}>
+            {renderCalendar()}
             <ScrollView>
                 {calendarItem()}
             </ScrollView>
