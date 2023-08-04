@@ -16,21 +16,23 @@ const DisplayMonth = (date: Date) => {
 }
 
 const CalendarScreen = () => {
-    const [selected, setSelected] = useState<string>(INITIAL_DATE)
+    const [selected, setSelected] = useState<string>('')
     const [currentMonth, setCurrentMonth] = useState<Date>(CURRENT_DATE)
     const [calendarData, setCalendarData] = useState<GymCalendarDto[]>([])
     const [dots, setDots] = useState({})
+    const [loading, setLoading] = useState<boolean>(true)
     const router = useRouter()
+
+    useEffect(() => {
+        void fetchCalendar()
+    }, [currentMonth])
 
     const fetchCalendar = async () => {
         console.log("Getting Calendar " + currentMonth.getFullYear() + " " + (currentMonth.getMonth() + 1).toString())
-        setCalendarData(await getCalendarApi(currentMonth.getFullYear().toString(), (currentMonth.getMonth() + 1).toString()))
-    }
-
-    const fetchDots = () => {
-        console.log("Create dots")
+        const result:GymCalendarDto[] = await getCalendarApi(currentMonth.getFullYear().toString(), (currentMonth.getMonth() + 1).toString())
+        setCalendarData(result)
         let markedDots = {}
-        calendarData.map((value) => {
+        result.map((value) => {
             markedDots[CalendarUtils.getCalendarDateString(value.event_start_time)] = {
                 dots: [
                     {key: value.event_name, color: 'blue', selectedDotColor: 'red'}
@@ -38,15 +40,14 @@ const CalendarScreen = () => {
             }
         })
         setDots(markedDots)
+        setLoading(false)
     }
 
-    const onDayPress = useCallback((day: DateData) => {
+    const onDayPress = (day: DateData) => {
         setSelected(day.dateString);
-    }, []);
+    }
 
     const marked = useMemo(() => {
-        console.log("Load marked")
-        console.log(dots)
         let markedDay = {
             [selected]: {
                 selected: true,
@@ -59,12 +60,7 @@ const CalendarScreen = () => {
             ...dots,
             ...markedDay
         }
-    }, [selected,currentMonth]);
-
-    useEffect(() => {
-        void fetchCalendar()
-        fetchDots()
-    }, [currentMonth])
+    }, [selected, dots]);
 
     const customHeaderProps: any = useRef();
 
@@ -83,43 +79,47 @@ const CalendarScreen = () => {
     };
 
     const renderCalendar = () => {
-        const CustomHeader = React.forwardRef((props, ref) => {
-            customHeaderProps.current = props;
-            return (
-                // @ts-expect-error
-                <View ref={ref} {...props}
-                      style={{
-                          backgroundColor: '#eebb8f',
-                          flexDirection: 'row',
-                          justifyContent: 'space-around',
-                          marginHorizontal: -4,
-                          padding: 8
-                      }}>
-                    <TouchableOpacity onPress={movePrevious}>
-                        <Text>Previous</Text>
-                    </TouchableOpacity>
-                    <Text>{DisplayMonth(currentMonth)}</Text>
-                    <TouchableOpacity onPress={moveNext}>
-                        <Text>Next</Text>
-                    </TouchableOpacity>
-                </View>
-            );
-        });
+        if(loading) {
+            return <Loading/>
+        }  else {
+            const CustomHeader = React.forwardRef((props, ref) => {
+                customHeaderProps.current = props;
+                return (
+                    // @ts-expect-error
+                    <View ref={ref} {...props}
+                          style={{
+                              backgroundColor: '#eebb8f',
+                              flexDirection: 'row',
+                              justifyContent: 'space-around',
+                              marginHorizontal: -4,
+                              padding: 8
+                          }}>
+                        <TouchableOpacity onPress={movePrevious}>
+                            <Text>Previous</Text>
+                        </TouchableOpacity>
+                        <Text>{DisplayMonth(currentMonth)}</Text>
+                        <TouchableOpacity onPress={moveNext}>
+                            <Text>Next</Text>
+                        </TouchableOpacity>
+                    </View>
+                );
+            });
 
-        return (
-            <Fragment>
-                <Calendar
-                    customHeader={CustomHeader}
-                    testID={testIDs.calendars.FIRST}
-                    enableSwipeMonths
-                    current={INITIAL_DATE}
-                    style={{marginBottom: 10}}
-                    onDayPress={onDayPress}
-                    markingType={'multi-dot'}
-                    markedDates={marked}
-                />
-            </Fragment>
-        );
+            return (
+                <Fragment>
+                    <Calendar
+                        customHeader={CustomHeader}
+                        testID={testIDs.calendars.FIRST}
+                        enableSwipeMonths
+                        current={INITIAL_DATE}
+                        style={{marginBottom: 10}}
+                        onDayPress={onDayPress}
+                        markingType={'multi-dot'}
+                        markedDates={marked}
+                    />
+                </Fragment>
+            );
+        }
     };
 
     const calendarItem = () => {
@@ -141,8 +141,6 @@ const CalendarScreen = () => {
         }
         return <Loading/>
     };
-
-
 
     return (
         <ScrollView showsVerticalScrollIndicator={false}

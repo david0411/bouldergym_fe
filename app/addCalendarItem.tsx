@@ -1,25 +1,17 @@
 import React, {useEffect, useState} from "react";
-import {SafeAreaView} from "react-native";
+import {SafeAreaView, View} from "react-native";
 import {Stack} from "expo-router";
-import {
-    Provider,
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogHeader,
-    Text, Flex
-} from "@react-native-material/core";
+import {Dialog} from 'react-native-simple-dialogs';
+import {Box, Button, Flex, Snackbar, Spacer, Text} from "@react-native-material/core";
 import RNDateTimePicker, {DateTimePickerEvent} from "@react-native-community/datetimepicker";
 import {Dropdown} from "react-native-element-dropdown";
 import {getLocationApi} from "./api/LocationApi";
 import {getSubLocationApi} from "./api/SubLocationApi";
 import {getEventApi} from "./api/EventApi";
+import {addCalendarApi} from "./api/AddCalendarApi";
 import {LocationDto} from './data/LocationDto'
 import {SubLocationDto} from './data/SubLocationDto'
 import {EventDto} from './data/EventDto'
-import {addCalendarApi} from "./api/AddCalendarApi";
 import {GymCalendarDto} from "./data/GymCalendarDto";
 
 const AddCalendarItem = () => {
@@ -48,6 +40,7 @@ const AddCalendarItem = () => {
     const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false)
     const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false)
     const [showSubmitDialog, setShowSubmitDialog] = useState<boolean>(false)
+    const [showMessageBar, setShowMessageBar] = useState<boolean>(false)
 
     const fetchDate = async () => {
         setLocationData(await getLocationApi())
@@ -89,64 +82,78 @@ const AddCalendarItem = () => {
         setShowEndTimePicker(false)
     }
     const handleSubmit = async () => {
-        const eventStartTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startTime.getHours(), startTime.getMinutes(), 0, 0)
-        const eventEndTime = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endTime.getHours(), endTime.getMinutes(), 0, 0)
-        setSubmitResult(await addCalendarApi({
-            location_id: location,
-            sub_location_id: subLocation,
-            event_id: event,
-            event_start_time: eventStartTime,
-            event_end_time: eventEndTime
-        }))
-        setShowSubmitDialog(true)
+        if (location==null|| subLocation==null|| event==null)   {
+            setShowMessageBar(true)
+        }
+        else {
+            const eventStartTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startTime.getHours(), startTime.getMinutes(), 0, 0)
+            const eventEndTime = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endTime.getHours(), endTime.getMinutes(), 0, 0)
+            setSubmitResult(await addCalendarApi({
+                location_id: location,
+                sub_location_id: subLocation,
+                event_id: event,
+                event_start_time: eventStartTime,
+                event_end_time: eventEndTime
+            }))
+            setShowSubmitDialog(true)
+        }
     }
 
     useEffect(() => {
         void fetchDate()
     }, []);
 
+    const messageBar = () => {
+        if(showMessageBar)  {
+            return <Snackbar
+                message="Please fill all the information"
+                action={<Button variant="text" title="Dismiss" color="#BB86FC" compact onPress={()=> {setShowMessageBar(false)}}/>}
+                style={{ position: "absolute", start: 0, end: 0, bottom: 0 }}
+            />
+        }   else
+            return <></>
+    }
+
     const submitDialog = () => {
         if (submitResult.calendar_id != 0) {
-            return <Provider>
-                <Dialog visible={showSubmitDialog} onDismiss={() => setShowSubmitDialog(false)}>
-                    <DialogHeader title="Result"/>
-                    <DialogContent>
-                        <Text>
-                            CalendarID: {submitResult.calendar_id}</Text>
-                        <Text>
-                            Location Name: {submitResult.location_name}</Text>
-                        <Text>
-                            Sub Location Name: {submitResult.sub_location_name}</Text>
-                        <Text>
-                            Event Name: {submitResult.event_name}</Text>
-                        <Text>
-                            Event Start Time:
-                            {submitResult.event_start_time.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"})}
-                        </Text>
-                        <Text>
-                            Event End Time:
-                            {submitResult.event_end_time.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"})}
-                        </Text>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            title="Ok"
-                            compact
-                            variant="text"
-                            onPress={() => setShowSubmitDialog(false)}
-                        />
-                    </DialogActions>
-                </Dialog>
-            </Provider>
+            return <Dialog
+                visible={showSubmitDialog}
+                title="Result"
+                onTouchOutside={() => setShowSubmitDialog(false)}
+                contentInsetAdjustmentBehavior="automatic"
+                onRequestClose={() => {
+                }}>
+                <View>
+                    <Text>
+                        CalendarID: {submitResult.calendar_id}</Text>
+                    <Text>
+                        Location Name: {submitResult.location_name}</Text>
+                    <Text>
+                        Sub Location Name: {submitResult.sub_location_name}</Text>
+                    <Text>
+                        Event Name: {submitResult.event_name}</Text>
+                    <Text>
+                        Event Start Time:
+                        {submitResult.event_start_time.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"})}
+                    </Text>
+                    <Text>
+                        Event End Time:
+                        {submitResult.event_end_time.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"})}
+                    </Text>
+                </View>
+            </Dialog>
         } else
-            return <Provider>
-                <Dialog visible={showSubmitDialog} onDismiss={() => setShowSubmitDialog(false)}>
-                    <DialogHeader title="Result"/>
-                    <DialogContent>
-                        <Text>Error</Text>
-                    </DialogContent>
-                </Dialog>
-            </Provider>
+            return <Dialog
+                visible={showSubmitDialog}
+                title="Result"
+                onTouchOutside={() => setShowSubmitDialog(false)}
+                contentInsetAdjustmentBehavior="automatic"
+                onRequestClose={() => {
+                }}>
+                <View>
+                    <Text>Something Wrong!</Text>
+                </View>
+            </Dialog>
     }
 
     return <SafeAreaView>
@@ -154,42 +161,46 @@ const AddCalendarItem = () => {
             options={{
                 headerTitle: 'Create new Event'
             }}/>
-        <Box style={{height: 30}}></Box>
+        <View style={{margin: "5%", height: "95%"}}>
             <Dropdown placeholder="Select Location"
                       data={locationData}
                       labelField="location_name"
                       valueField="location_id"
                       onChange={handleSelectLocation}/>
-        <Box style={{height: 30}}></Box>
+            <Box style={{height: 30}}></Box>
             <Dropdown placeholder="Select Sub Location"
                       data={subLocationFilter}
                       labelField="subLocation_name"
                       valueField="subLocation_id"
                       dropdownPosition="bottom"
                       onChange={handleSelectSubLocation}/>
-        <Box style={{height: 30}}></Box>
+            <Box style={{height: 30}}></Box>
             <Dropdown placeholder="Select Event"
                       data={eventData}
                       labelField="event_name"
                       valueField="event_id"
                       onChange={handleSelectEvent}/>
-        <Box style={{height: 30}}></Box>
-            <Button title="Event Start Time"
-                    onPress={handleShowStartDatePicker}/>
             <Box style={{height: 30}}></Box>
-            <Text>
-                {startDate.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[0]}
-                {startTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[0]}:
-                {startTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[1]}
-            </Text>
+            <Flex direction="row">
+                <Button title="Start Time"
+                        onPress={handleShowStartDatePicker}/>
+                <Spacer/>
+                <Text>
+                    {startDate.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[0]}
+                    {startTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[0]}:
+                    {startTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[1]}
+                </Text>
+            </Flex>
             <Box style={{height: 30}}></Box>
-            <Button title="Event End Time" onPress={handleShowEndDatePicker}/>
-            <Box style={{height: 30}}></Box>
-            <Text>
-                {endDate.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[0]}
-                {endTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[0]}:
-                {endTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[1]}
-            </Text>
+            <Flex direction="row">
+                <Button title="End Time" onPress={handleShowEndDatePicker}/>
+                <Spacer/>
+                <Text>
+                    {endDate.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[0]}
+                    {endTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[0]}:
+                    {endTime.toLocaleString("en-gb", {timeZone: "Asia/Hong_Kong"}).split(',')[1].split(':')[1]}
+                </Text>
+            </Flex>
             <Box style={{height: 30}}></Box>
             {showStartDatePicker &&
                 <RNDateTimePicker
@@ -221,6 +232,8 @@ const AddCalendarItem = () => {
             }
             <Button title="Submit" onPress={handleSubmit}/>
             {submitDialog()}
+            {messageBar()}
+        </View>
     </SafeAreaView>
 }
 

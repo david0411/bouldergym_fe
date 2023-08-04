@@ -1,5 +1,5 @@
-import {SafeAreaView} from "react-native"
-import {Stack, useRouter} from "expo-router";
+import {SafeAreaView, View} from "react-native"
+import {Link, Stack, useRouter} from "expo-router";
 import CalendarScreen from "./component/CalendarScreen"
 import {Button} from "@react-native-material/core";
 
@@ -9,17 +9,17 @@ const Home = () => {
     return (
         <SafeAreaView>
             <Stack.Screen
-            options={{
-                headerTitle: 'Gym Calendar',
-                headerRight: () => (
-                    <Button title="Add"
-                            color="blue"
-                            onPress={() => {
-                        router.push({pathname:"/addCalendarItem"})
-                    }}/>
+                options={{
+                    headerTitle: 'Gym Calendar',
+                    headerRight: () => (
+                        <Link href="/addCalendarItem" asChild>
+                            <Button title="Add" color="blue" />
+                        </Link>
                     )
-            }}/>
-            <CalendarScreen/>
+                }}/>
+            <View style={{margin: "5%"}}>
+                <CalendarScreen/>
+            </View>
         </SafeAreaView>
     )
 }
