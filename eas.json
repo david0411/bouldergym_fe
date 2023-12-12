@@ -1,0 +1,20 @@
+{
+  "build": {
+    "preview": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.0.154:8080"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+       "env": {
+         "EXPO_PUBLIC_API_URL": "http://54.255.242.1:8080"
+       },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}

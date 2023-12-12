@@ -4,7 +4,16 @@
     "web": {
       "bundler": "metro"
     },
-    "name": "personal_projects",
-    "slug": "personal_projects"
+    "name": "BoulderingGym_HK",
+    "slug": "personal_projects",
+    "extra": {
+      "eas": {
+        "projectId": "83818e69-d273-424c-b8b1-16d38acafb97"
+      }
+    },
+    "icon": "./app/resources/icon/app_icon.png",
+    "android": {
+      "package": "com.david0411.boulderinggym_hk"
+    }
   }
 }
