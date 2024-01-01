@@ -11,8 +11,13 @@ const Home = () => {
             <Stack.Screen
                 options={{
                     headerTitle: 'Gym Calendar',
+                    headerLeft: () => (
+                        <Link href="/component/LocationFilter" asChild>
+                            <Button title="Filter" color="blue" />
+                        </Link>
+                    ),
                     headerRight: () => (
-                        <Link href="/addCalendarItem" asChild>
+                        <Link href="/component/addCalendarItem" asChild>
                             <Button title="Add" color="blue" />
                         </Link>
                     )

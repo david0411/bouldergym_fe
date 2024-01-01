@@ -5,14 +5,14 @@ import {Dialog} from 'react-native-simple-dialogs';
 import {Box, Button, Flex, Snackbar, Spacer, Text} from "@react-native-material/core";
 import RNDateTimePicker, {DateTimePickerEvent} from "@react-native-community/datetimepicker";
 import {Dropdown} from "react-native-element-dropdown";
-import {getLocationApi} from "./api/LocationApi";
-import {getSubLocationApi} from "./api/SubLocationApi";
-import {getEventApi} from "./api/EventApi";
-import {addCalendarApi} from "./api/AddCalendarApi";
-import {LocationDto} from './data/LocationDto'
-import {SubLocationDto} from './data/SubLocationDto'
-import {EventDto} from './data/EventDto'
-import {GymCalendarDto} from "./data/GymCalendarDto";
+import {getLocationApi} from "../api/LocationApi";
+import {getSubLocationApi} from "../api/SubLocationApi";
+import {getEventApi} from "../api/EventApi";
+import {addCalendarApi} from "../api/AddCalendarApi";
+import {LocationDto} from '../data/LocationDto'
+import {SubLocationDto} from '../data/SubLocationDto'
+import {EventDto} from '../data/EventDto'
+import {GymCalendarDto} from "../data/GymCalendarDto";
 
 const AddCalendarItem = () => {
     const CURRENT_DATE: Date = new Date(Date.now());

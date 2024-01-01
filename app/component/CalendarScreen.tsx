@@ -8,6 +8,9 @@ import testIDs from '../testIDs';
 import {GymCalendarDto} from '../data/GymCalendarDto'
 import {getCalendarApi} from "../api/CalendarApi";
 import {DateData} from "react-native-calendars/src/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LocationFilterItem from "./LocationFilterItem";
+import {LocationFilterData} from "../data/LocationFilterData";
 
 const CURRENT_DATE: Date = new Date(Date.now());
 const INITIAL_DATE: string = CURRENT_DATE.toISOString().split('T')[0];
@@ -28,11 +31,19 @@ const CalendarScreen = () => {
     }, [currentMonth])
 
     const fetchCalendar = async () => {
-        console.log("Getting Calendar " + currentMonth.getFullYear() + " " + (currentMonth.getMonth() + 1).toString())
+        // console.log("Getting Calendar " + currentMonth.getFullYear() + " " + (currentMonth.getMonth() + 1).toString())
         const result:GymCalendarDto[] = await getCalendarApi(currentMonth.getFullYear().toString(), (currentMonth.getMonth() + 1).toString())
-        setCalendarData(result)
+        const value = await AsyncStorage.multiGet(['@locationFilter'])
+        const showResult = result.filter(
+            (value1) => JSON.parse(value[0][1]).filter(
+                (value: { selected: boolean; }) => value.selected==true).map(
+                    (value: { location: { location_name: any; }; }) => value.location.location_name).includes(
+                        value1.location_name
+            )
+        )
+        setCalendarData(showResult)
         let markedDots = {}
-        result.map((value) => {
+        showResult.map((value) => {
             markedDots[CalendarUtils.getCalendarDateString(value.event_start_time)] = {
                 dots: [
                     {key: value.event_name, color: 'blue', selectedDotColor: 'red'}
