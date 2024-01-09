@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        alignContent: 'stretch'
+        justifyContent: 'space-between'
     },
     location: {
         fontSize: 20,
