@@ -3,7 +3,7 @@ import * as React from 'react';
 import {useEffect, useState} from "react";
 import {LocationDto} from "../data/LocationDto";
 import {getLocationApi} from "../api/LocationApi";
-import {StyleSheet, SafeAreaView, FlatList, Text, Switch, View} from "react-native";
+import {SafeAreaView, FlatList} from "react-native";
 import {Stack} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LocationFilterItem from "./LocationFilterItem";
@@ -58,16 +58,5 @@ const LocationFilter = () => {
 
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignContent: 'stretch'
-    },
-    location: {
-        fontSize: 20,
-    },
-});
 
 export default LocationFilter

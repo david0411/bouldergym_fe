@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from "react-native";
-import {LocationDto} from "../data/LocationDto";
 import {LocationFilterData} from "../data/LocationFilterData";
 
 type LocationItem = {

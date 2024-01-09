@@ -1,5 +1,5 @@
 import {useRouter} from "expo-router";
-import React, {Fragment, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import {Calendar, CalendarUtils} from 'react-native-calendars';
 import {ListItem} from "@react-native-material/core";
@@ -9,8 +9,6 @@ import {GymCalendarDto} from '../data/GymCalendarDto'
 import {getCalendarApi} from "../api/CalendarApi";
 import {DateData} from "react-native-calendars/src/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import LocationFilterItem from "./LocationFilterItem";
-import {LocationFilterData} from "../data/LocationFilterData";
 
 const CURRENT_DATE: Date = new Date(Date.now());
 const INITIAL_DATE: string = CURRENT_DATE.toISOString().split('T')[0];
