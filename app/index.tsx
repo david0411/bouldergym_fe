@@ -11,6 +11,7 @@ const Home = () => {
             <Stack.Screen
                 options={{
                     headerTitle: 'Gym Calendar',
+                    headerTitleAlign:   'center',
                     headerLeft: () => (
                         <Link href="/component/LocationFilter" asChild>
                             <Button title="Filter" color="blue" />
